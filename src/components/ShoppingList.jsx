@@ -9,41 +9,45 @@ function ShoppingList() {
 
   useEffect(() => {
     fetch("http://localhost:4000/items")
-      .then(r => {
-        if (r.ok) {
-          return r.json()
-        } else {
-          console.log("fetch request failed")
-        }
+      .then((r) => {
+        if (!r.ok) throw new Error("Fetch request failed");
+        return r.json();
       })
-      .then(items => setItems(items))
-      .catch(error => console.log(error))
+      .then((data) => setItems(data))
+      .catch((error) => console.log(error));
   }, []);
-
-  function handleAddItem(newItem) {
-    setItems([...items, newItem]);
-  }
 
   function handleCategoryChange(category) {
     setSelectedCategory(category);
   }
 
-  const itemsToDisplay = items.filter((item) => {
-    if (selectedCategory === "All") return true;
+  function handleAddItem(newItem) {
+    setItems((prev) => [...prev, newItem]);
+  }
 
-    return item.category === selectedCategory;
-  });
+  function handleUpdateItem(updatedItem) {
+    setItems((prev) =>
+      prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+    );
+  }
+
+  const itemsToDisplay =
+    selectedCategory === "All"
+      ? items
+      : items.filter((item) => item.category === selectedCategory);
 
   return (
     <div className="ShoppingList">
       <ItemForm onAddItem={handleAddItem} />
+
       <Filter
         category={selectedCategory}
         onCategoryChange={handleCategoryChange}
       />
+
       <ul className="Items">
         {itemsToDisplay.map((item) => (
-          <Item key={item.id} item={item} />
+          <Item key={item.id} item={item} onUpdateItem={handleUpdateItem} />
         ))}
       </ul>
     </div>
